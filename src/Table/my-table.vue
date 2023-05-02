@@ -1,4 +1,5 @@
 <template>
+  <button @click="changeEdit">{{ editable ? '退出编辑' : '进入编辑' }}</button>
   <table class="pure-table pure-table-bordered" @contextmenu.prevent="handleContextMenu" @keydown="handleKeyDown">
     <thead>
     <tr>
@@ -9,16 +10,18 @@
     <tr v-for="(row,rowIndex) in rows" :key="row.id">
       <td v-for="(column,colIndex) in columns" :key="column.field"
           :class="{ selected: isSelected(rowIndex, colIndex) }"
-          @mousedown="handleMouseDown(rowIndex, colIndex)"
-          @mousemove="handleMouseMove(rowIndex, colIndex)"
+          style="user-select: none"
+          @mousedown="handleMouseDown(rowIndex, colIndex,column.field)"
+          @mousemove="handleMouseMove(rowIndex, colIndex,column.field)"
           @mouseup="handleMouseUp"
           @click="handleClick"
           @keydown="handleKeyDown"
           @paste="pasteCells"
       >
-        <div class="cell-content" tabindex="0">
+        <span v-if="editable" class="cell-content" >
           {{ row[column.field] }}
-        </div>
+        </span>
+        <input v-else type="text" v-model="row[column.field]">
       </td>
     </tr>
     </tbody>
@@ -43,6 +46,7 @@ export default {
   },
   data(){
     return {
+      editable:true,
       isDragging: false,
       selectedCells: [],
       startRow: null,
@@ -55,19 +59,24 @@ export default {
     }
   },
   methods:{
+    changeEdit(){
+      this.editable = !this.editable
+    },
     handleMouseDown(row,col){
-      // Set the isDragging flag to true
-      this.isDragging = true;
-      console.log('down',row,col)
 
-      // Set the startRow, startCol, endRow and endCol properties
-      this.startRow = row;
-      this.startCol = col;
-      this.endRow = row;
-      this.endCol = col;
+      if(event.button === 0){
+        this.isDragging = true;
+        console.log('zuo')
+        // Set the startRow, startCol, endRow and endCol properties
+        this.startRow = row;
+        this.startCol = col;
+        this.endRow = row;
+        this.endCol = col;
+        this.selectedCells = []
+        // Add the clicked cell to the selectedCells array
+        // this.selectedCells.push({ row, col });
+      }
 
-      // Add the clicked cell to the selectedCells array
-      // this.selectedCells.push({ row, col });
     },
     handleMouseMove(row,col){
       if (this.isDragging) {
@@ -77,10 +86,9 @@ export default {
 
         // Clear the selectedCells array
         this.selectedCells = [];
-
         // Calculate the range of cells that should be selected
-        for (var i = Math.min(this.startRow, this.endRow); i <= Math.max(this.startRow, this.endRow); i++) {
-          for (var j = Math.min(this.startCol, this.endCol); j <= Math.max(this.startCol, this.endCol); j++) {
+        for (let i = Math.min(this.startRow, this.endRow); i <= Math.max(this.startRow, this.endRow); i++) {
+          for (let j = Math.min(this.startCol, this.endCol); j <= Math.max(this.startCol, this.endCol); j++) {
             this.selectedCells.push({ row: i, col: j });
           }
         }
@@ -103,7 +111,6 @@ export default {
       });
     },
     handleClick(){
-      this.selectedCells = []
       this.contextMenuVisible = false
     },
     handleContextMenu(event){
@@ -125,7 +132,16 @@ export default {
       event.preventDefault();
     },
     copyCells() {
-      console.log('copy')
+      let initRow = this.selectedCells[0].row,initCol = this.selectedCells[0].col;
+      let len = this.selectedCells.length;
+      let width = this.selectedCells[len - 1].row - this.selectedCells[0].row + 1;
+      let copyData = new Array(width).fill('').map(()=> new Array(Math .floor(len/width) ).fill(''))
+      this.selectedCells.forEach((item) =>{
+        let rowIndex = item.row;
+        let colIndex = item.col;
+        copyData[rowIndex - initRow][colIndex - initCol] = this.rows[rowIndex][this.columns[colIndex].field]
+        console.log(copyData)
+      })
       // if (event.ctrlKey && event.keyCode === 86) {
       //   console.log('Ctrl+V pressed!');
       // }
