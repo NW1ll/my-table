@@ -1,35 +1,37 @@
 <template>
-  <button @click="changeEdit">{{ editable ? '退出编辑' : '进入编辑' }}</button>
-  <table class="pure-table pure-table-bordered" @contextmenu.prevent="handleContextMenu" @keydown="handleKeyDown">
-    <thead>
-    <tr>
-      <th v-for="column in columns" :key="column.field">{{ column.title }}</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr v-for="(row,rowIndex) in rows" :key="row.id">
-      <td v-for="(column,colIndex) in columns" :key="column.field"
-          :class="{ selected: isSelected(rowIndex, colIndex) }"
-          style="user-select: none"
-          @mousedown="handleMouseDown(rowIndex, colIndex,column.field)"
-          @mousemove="handleMouseMove(rowIndex, colIndex,column.field)"
-          @mouseup="handleMouseUp"
-          @click="handleClick"
-          @keydown="handleKeyDown"
-          @paste="pasteCells"
-      >
+  <div @keydown="handleKeyDown" tabindex="-1"  style="outline: none;" >
+    <button @click="changeEdit">{{ editable ? '进入编辑' : '退出编辑' }}</button>
+    <table class="pure-table pure-table-bordered" @contextmenu.prevent="handleContextMenu" >
+      <thead>
+      <tr>
+        <th v-for="column in columns" :key="column.field">{{ column.title }}</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="(row,rowIndex) in rows" :key="row.id">
+        <td v-for="(column,colIndex) in columns" :key="column.field"
+            :class="{ selected: isSelected(rowIndex, colIndex) }"
+            style="user-select: none"
+            @mousedown="handleMouseDown(rowIndex, colIndex,column.field)"
+            @mousemove="handleMouseMove(rowIndex, colIndex,column.field)"
+            @mouseup="handleMouseUp"
+            @click="handleClick"
+            @paste="pasteCells"
+        >
         <span v-if="editable" class="cell-content" >
           {{ row[column.field] }}
         </span>
-        <input v-else type="text" v-model="row[column.field]">
-      </td>
-    </tr>
-    </tbody>
-  </table>
-  <div v-if="contextMenuVisible" class="context-menu" :style="{top: contextMenuTop + 'px', left: contextMenuLeft + 'px'}">
-    <div class="menu-item" @click="copyCells">Copy</div>
-    <div class="menu-item" @click="pasteCells">Paste</div>
+          <input v-else type="text" v-model="row[column.field]">
+        </td>
+      </tr>
+      </tbody>
+    </table>
+    <div v-if="contextMenuVisible" class="context-menu" :style="{top: contextMenuTop + 'px', left: contextMenuLeft + 'px'}">
+      <div class="menu-item" @click="copyCells">Copy</div>
+      <div class="menu-item" @click="pasteCells">Paste</div>
+    </div>
   </div>
+
 </template>
 
 <script>
@@ -55,7 +57,8 @@ export default {
       endCol: null,
       contextMenuVisible: false,
       contextMenuTop: 0,
-      contextMenuLeft: 0
+      contextMenuLeft: 0,
+      copyData:null,
     }
   },
   methods:{
@@ -63,7 +66,6 @@ export default {
       this.editable = !this.editable
     },
     handleMouseDown(row,col){
-
       if(event.button === 0){
         this.isDragging = true;
         console.log('zuo')
@@ -74,7 +76,7 @@ export default {
         this.endCol = col;
         this.selectedCells = []
         // Add the clicked cell to the selectedCells array
-        // this.selectedCells.push({ row, col });
+        this.selectedCells.push({ row, col });
       }
 
     },
@@ -140,23 +142,42 @@ export default {
         let rowIndex = item.row;
         let colIndex = item.col;
         copyData[rowIndex - initRow][colIndex - initCol] = this.rows[rowIndex][this.columns[colIndex].field]
-        console.log(copyData)
       })
-      // if (event.ctrlKey && event.keyCode === 86) {
-      //   console.log('Ctrl+V pressed!');
-      // }
+      this.copyData = copyData
+
       this.contextMenuVisible = false
       // 复制所选中的单元格
       // ...
     },
     handleKeyDown(event){
-      console.log('copy')
-      if (event.ctrlKey && event.keyCode === 86) {
-        console.log('Ctrl+V pressed!');
+      console.log('keydown')
+      if (event.ctrlKey && event.key === 'c') {
+        let initRow = this.selectedCells[0].row,initCol = this.selectedCells[0].col;
+        let len = this.selectedCells.length;
+        let width = this.selectedCells[len - 1].row - this.selectedCells[0].row + 1;
+        let copyData = new Array(width).fill('').map(()=> new Array(Math .floor(len/width) ).fill(''))
+        this.selectedCells.forEach((item) =>{
+          let rowIndex = item.row;
+          let colIndex = item.col;
+          copyData[rowIndex - initRow][colIndex - initCol] = this.rows[rowIndex][this.columns[colIndex].field]
+        })
+        this.copyData = copyData
+        console.log(this.copyData)
+      }else if(event.ctrlKey && event.key === 'v'){
+        let rowIndex = this.selectedCells[0].row,colIndex = this.selectedCells[0].col;
+        console.log(rowIndex,colIndex);
+        for(let i = 0 ; i < this.copyData.length; i++){
+          for(let j = 0; j < this.copyData[0].length;j++){
+            // eslint-disable-next-line vue/no-mutating-props
+            this.rows[i + rowIndex][this.columns[j + colIndex].field] = this.copyData[i][j]
+            console.log(this.copyData[i][j])
+          }
+        }
       }
     },
     pasteCells() {
-      console.log('paste')
+      console.log('paste',event.target)
+
       this.contextMenuVisible = false
       // 粘贴到所选中的单元格
       // ...
