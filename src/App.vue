@@ -1,5 +1,6 @@
 <template>
-  <my-table :rows="rows" :columns="columns"></my-table>
+  <my-table :rows="rows" :columns="columns">
+  </my-table>
 <!--  <tes-two></tes-two>-->
 <!--  <HelloWorld msg="Welcome to Your Vue.js App"/>-->
 <!--  <test-one></test-one>-->

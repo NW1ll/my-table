@@ -1,6 +1,5 @@
 <template>
   <div @keydown="handleKeyDown" tabindex="-1"  style="outline: none;" >
-    <button @click="changeEdit">{{ editable ? '进入编辑' : '退出编辑' }}</button>
     <table class="pure-table pure-table-bordered" @contextmenu.prevent="handleContextMenu" >
       <thead>
       <tr>
@@ -10,18 +9,21 @@
       <tbody>
       <tr v-for="(row,rowIndex) in rows" :key="row.id">
         <td v-for="(column,colIndex) in columns" :key="column.field"
-            :class="{ selected: isSelected(rowIndex, colIndex) }"
-            style="user-select: none"
-            @mousedown="handleMouseDown(rowIndex, colIndex,column.field)"
-            @mousemove="handleMouseMove(rowIndex, colIndex,column.field)"
+            :class="{ selected: isSelected(rowIndex, colIndex)}"
+            style="user-select: none;position: relative"
+            @mousedown="handleMouseDown(rowIndex, colIndex)"
+            @mousemove="handleMouseMove(rowIndex, colIndex)"
             @mouseup="handleMouseUp"
             @click="handleClick"
-            @paste="pasteCells"
         >
-        <span v-if="editable" class="cell-content" >
+          <slot v-if="$slots.default"></slot>
+          <span v-else class="cell-content">
           {{ row[column.field] }}
-        </span>
-          <input v-else type="text" v-model="row[column.field]">
+          </span>
+          <div>
+            <div @mousedown="handleMouseDown" :class="{selectedOne : isSelectedOne(rowIndex, colIndex)}"></div>
+            <div :class="{selectedChange: isChanged(rowIndex, colIndex)}"></div>
+          </div>
         </td>
       </tr>
       </tbody>
@@ -34,157 +36,211 @@
 
 </template>
 
-<script>
-export default {
-  props: {
-    columns: {
-      type: Array,
-      required: true
-    },
-    rows: {
-      type: Array,
-      required: true
-    }
+
+<script setup>
+import {ref, reactive, defineProps} from "vue";
+//插槽与col对应
+const props = defineProps({
+  columns: {
+    type: Array,
+    required: true
   },
-  data(){
-    return {
-      editable:true,
-      isDragging: false,
-      selectedCells: [],
-      startRow: null,
-      startCol: null,
-      endRow: null,
-      endCol: null,
-      contextMenuVisible: false,
-      contextMenuTop: 0,
-      contextMenuLeft: 0,
-      copyData:null,
+  rows: {
+    type: Array,
+    required: true
+  }
+})
+let isDragging = ref(false);
+let startRow = ref(null);
+let startCol = ref(null);
+let endRow = ref(null);
+let endCol = ref(null);
+let contextMenuVisible = ref(false);
+let contextMenuTop = ref(0);
+let contextMenuLeft = ref(0);
+let select = reactive([])
+let copyData = reactive([])
+let selectedCells = reactive([])
+let divDragging = ref(false)
+let changed = reactive([])
+
+
+const handleMouseDown = (row,col)=>{
+  if(event.button === 0){
+    if(event.target.localName === 'div'){
+      divDragging.value = true
     }
-  },
-  methods:{
-    changeEdit(){
-      this.editable = !this.editable
-    },
-    handleMouseDown(row,col){
-      if(event.button === 0){
-        this.isDragging = true;
-        console.log('zuo')
-        // Set the startRow, startCol, endRow and endCol properties
-        this.startRow = row;
-        this.startCol = col;
-        this.endRow = row;
-        this.endCol = col;
-        this.selectedCells = []
-        // Add the clicked cell to the selectedCells array
-        this.selectedCells.push({ row, col });
-      }
-
-    },
-    handleMouseMove(row,col){
-      if (this.isDragging) {
-        // Update the endRow and endCol properties
-        this.endRow = row;
-        this.endCol = col;
-
-        // Clear the selectedCells array
-        this.selectedCells = [];
-        // Calculate the range of cells that should be selected
-        for (let i = Math.min(this.startRow, this.endRow); i <= Math.max(this.startRow, this.endRow); i++) {
-          for (let j = Math.min(this.startCol, this.endCol); j <= Math.max(this.startCol, this.endCol); j++) {
-            this.selectedCells.push({ row: i, col: j });
-          }
-        }
-      }
-    },
-    handleMouseUp(){
-      // Set the isDragging flag to false
-      this.isDragging = false;
-
-      // Reset the startRow, startCol, endRow and endCol properties
-      this.startRow = null;
-      this.startCol = null;
-      this.endRow = null;
-      this.endCol = null;
-    },
-    isSelected(row, col) {
-      // Check if the specified cell is selected
-      return this.selectedCells.some(function(cell) {
-        return cell.row === row && cell.col === col;
-      });
-    },
-    handleClick(){
-      this.contextMenuVisible = false
-    },
-    handleContextMenu(event){
-      this.contextMenuVisible = true;
-
-      // 获取鼠标点击的位置
-      const x = event.clientX;
-      const y = event.clientY;
-      console.log(x,y)
-      // 获取点击的元素
-      // const target = event.target;
-
-      // 计算菜单的位置
-      // const rect = target.getBoundingClientRect();
-      this.contextMenuTop = y ;
-      this.contextMenuLeft = x ;
-      console.log(this.contextMenuTop,this.contextMenuLeft)
-      // 阻止默认的右键菜单
-      event.preventDefault();
-    },
-    copyCells() {
-      let initRow = this.selectedCells[0].row,initCol = this.selectedCells[0].col;
-      let len = this.selectedCells.length;
-      let width = this.selectedCells[len - 1].row - this.selectedCells[0].row + 1;
-      let copyData = new Array(width).fill('').map(()=> new Array(Math .floor(len/width) ).fill(''))
-      this.selectedCells.forEach((item) =>{
-        let rowIndex = item.row;
-        let colIndex = item.col;
-        copyData[rowIndex - initRow][colIndex - initCol] = this.rows[rowIndex][this.columns[colIndex].field]
-      })
-      this.copyData = copyData
-
-      this.contextMenuVisible = false
-      // 复制所选中的单元格
-      // ...
-    },
-    handleKeyDown(event){
-      console.log('keydown')
-      if (event.ctrlKey && event.key === 'c') {
-        let initRow = this.selectedCells[0].row,initCol = this.selectedCells[0].col;
-        let len = this.selectedCells.length;
-        let width = this.selectedCells[len - 1].row - this.selectedCells[0].row + 1;
-        let copyData = new Array(width).fill('').map(()=> new Array(Math .floor(len/width) ).fill(''))
-        this.selectedCells.forEach((item) =>{
-          let rowIndex = item.row;
-          let colIndex = item.col;
-          copyData[rowIndex - initRow][colIndex - initCol] = this.rows[rowIndex][this.columns[colIndex].field]
-        })
-        this.copyData = copyData
-        console.log(this.copyData)
-      }else if(event.ctrlKey && event.key === 'v'){
-        let rowIndex = this.selectedCells[0].row,colIndex = this.selectedCells[0].col;
-        console.log(rowIndex,colIndex);
-        for(let i = 0 ; i < this.copyData.length; i++){
-          for(let j = 0; j < this.copyData[0].length;j++){
-            // eslint-disable-next-line vue/no-mutating-props
-            this.rows[i + rowIndex][this.columns[j + colIndex].field] = this.copyData[i][j]
-            console.log(this.copyData[i][j])
-          }
-        }
-      }
-    },
-    pasteCells() {
-      console.log('paste',event.target)
-
-      this.contextMenuVisible = false
-      // 粘贴到所选中的单元格
-      // ...
-    },
+    isDragging.value = true;
+    console.log('zuo')
+    // Set the startRow, startCol, endRow and endCol properties
+    startRow.value = row;
+    startCol.value = col;
+    endRow.value = row;
+    endCol.value = col;
+    select.splice(0,select.length)
+    selectedCells.splice(0,selectedCells.length)
+    // Add the clicked cell to the selectedCells array
+    selectedCells.push({ row, col });
+    select.push({ row, col })
   }
 }
+function throttled(fn, delay = 500) {
+  let oldtime = Date.now()
+  return function (...args) {
+    let newtime = Date.now()
+    if (newtime - oldtime >= delay) {
+      fn.apply(null, args)
+      oldtime = Date.now()
+    }
+  }
+}
+const MouseMove = (row,col) =>{
+  if (isDragging.value && divDragging.value) {
+    endRow.value = row;
+    endCol.value = col;
+    // Clear the selectedCells array
+    selectedCells.splice(0,selectedCells.length)
+    // changed.splice(0,changed.length)
+    let firstRow,firstCol,value,Len;
+    // Calculate the range of cells that should be selected
+    for (let i = Math.min(startRow.value, endRow.value); i <= Math.max(startRow.value, endRow.value); i++) {
+      selectedCells.push({ row: i, col: col });
+      firstRow = selectedCells[0].row;
+      firstCol = selectedCells[0].col
+      Len = selectedCells.length;
+      value = props.rows[firstRow][props.columns[firstCol].field]
+    }
+    for(let i = 0; i < Len; i++){
+      if(props.rows[firstRow + i][props.columns[firstCol].field] !== value){
+          let row = firstRow + i;
+          let col = firstCol;
+          changed.push({row,col})
+      }
+      // eslint-disable-next-line vue/no-mutating-props
+      props.rows[firstRow + i][props.columns[firstCol].field] = value
+    }
+    console.log(changed)
+  }else if (isDragging.value) {
+    // Update the endRow and endCol properties
+    endRow.value = row;
+    endCol.value = col;
+    // Clear the selectedCells array
+    selectedCells.splice(0,selectedCells.length)
+    // Calculate the range of cells that should be selected
+    for (let i = Math.min(startRow.value, endRow.value); i <= Math.max(startRow.value, endRow.value); i++) {
+      for (let j = Math.min(startCol.value, endCol.value); j <= Math.max(startCol.value, endCol.value); j++) {
+        selectedCells.push({ row: i, col: j });
+      }
+    }
+  }
+}
+const handleMouseMove = throttled(MouseMove,100)
+
+
+const handleMouseUp = () =>{
+  divDragging.value = false
+  isDragging.value = false;
+  startRow.value = null;
+  startCol.value = null;
+  endRow.value = null;
+  endCol.value = null;
+}
+
+const isSelected = (row, col) => {
+  return selectedCells.some(function(cell) {
+    return cell.row === row && cell.col === col;
+  });
+}
+
+const handleClick = () => {
+  contextMenuVisible.value = false
+}
+
+const handleContextMenu = (event) =>{
+  contextMenuVisible.value = true;
+
+  // 获取鼠标点击的位置
+  const x = event.clientX;
+  const y = event.clientY;
+  console.log(x,y)
+  // 获取点击的元素
+  // const target = event.target;
+
+  // 计算菜单的位置
+  // const rect = target.getBoundingClientRect();
+  contextMenuTop.value = y ;
+  contextMenuLeft.value = x ;
+  // 阻止默认的右键菜单
+  event.preventDefault();
+}
+const copyCells = ()=> {
+  let initRow = selectedCells[0].row,initCol = selectedCells[0].col;
+  let len = selectedCells.length;
+  let width = selectedCells[len - 1].row - selectedCells[0].row + 1;
+  console.log(width,len)
+  let copydata = new Array(width).fill('').map(()=> new Array(Math .floor(len/width) ).fill(''))
+  selectedCells.forEach((item) =>{
+    let rowIndex = item.row;
+    let colIndex = item.col;
+    copydata[rowIndex - initRow][colIndex - initCol] = props.rows[rowIndex][props.columns[colIndex].field]
+  })
+  copyData = copydata
+
+  contextMenuVisible.value = false
+  // 复制所选中的单元格
+  // ...
+}
+const handleKeyDown =(event) =>{
+  console.log('keydown')
+  if (event.ctrlKey && event.key === 'c') {
+    let initRow = selectedCells[0].row,initCol = selectedCells[0].col;
+    let len = selectedCells.length;
+    let width = selectedCells[len - 1].row - selectedCells[0].row + 1;
+    console.log(width,len)
+    let copydata = new Array(width).fill('').map(()=> new Array(Math .floor(len/width) ).fill(''))
+    selectedCells.forEach((item) =>{
+      let rowIndex = item.row;
+      let colIndex = item.col;
+      copydata[rowIndex - initRow][colIndex - initCol] = props.rows[rowIndex][props.columns[colIndex].field]
+    })
+    copyData = copydata
+    console.log(copyData)
+  }else if(event.ctrlKey && event.key === 'v'){
+    let rowIndex = selectedCells[0].row,colIndex = selectedCells[0].col;
+    for(let i = 0 ; i < copyData.length; i++){
+      for(let j = 0; j < copyData[0].length;j++){
+        // eslint-disable-next-line vue/no-mutating-props
+        props.rows[i + rowIndex][props.columns[j + colIndex].field] = copyData[i][j]
+        selectedCells.push({ row: i + rowIndex, col: j + colIndex});
+      }
+    }
+  }
+}
+
+const pasteCells = () =>{
+  let rowIndex = selectedCells[0].row,colIndex = selectedCells[0].col;
+  for(let i = 0 ; i < copyData.length; i++){
+    for(let j = 0; j < copyData[0].length;j++){
+      // eslint-disable-next-line vue/no-mutating-props
+      props.rows[i + rowIndex][props.columns[j + colIndex].field] = copyData[i][j]
+      selectedCells.push({ row: i + rowIndex, col: j + colIndex});
+    }
+  }
+}
+
+const isSelectedOne = (row, col) => {
+  return select.some(function(cell) {
+    return cell.row === row && cell.col === col;
+  });
+}
+const isChanged = (row, col)=>{
+  return changed.some(function(cell) {
+    return cell.row === row && cell.col === col;
+  });
+}
+
 </script>
+
 
 <style scoped>
 html {
@@ -249,6 +305,7 @@ td,th {
 
 .selected{
   background-color: beige!important;
+
 }
 .cell-content {
   user-select: auto;
@@ -269,5 +326,22 @@ td,th {
 }
 
 
+.selectedOne{
+  width: 7px;
+  height: 7px;
+  background-color: aqua ;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  cursor: crosshair
+}
 
+.selectedChange{
+  width: 7px;
+  height: 7px;
+  background-color: red ;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
 </style>
