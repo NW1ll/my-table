@@ -14,9 +14,10 @@
             @mousedown="handleMouseDown(rowIndex, colIndex)"
             @mousemove="handleMouseMove(rowIndex, colIndex)"
             @mouseup="handleMouseUp"
-            @click="handleClick"
+            @click="handleClick(rowIndex, colIndex)"
+            @dblclick="handleDbclick(rowIndex, colIndex)"
         >
-          <slot v-if="$slots.default"></slot>
+          <slot v-if="allowEdit.get(`${rowIndex}${colIndex}`) && $slots.default"></slot>
           <span v-else class="cell-content">
           {{ row[column.field] }}
           </span>
@@ -33,12 +34,12 @@
       <div class="menu-item" @click="pasteCells">Paste</div>
     </div>
   </div>
-
 </template>
 
 
 <script setup>
 import {ref, reactive, defineProps} from "vue";
+// import * as buffer from "buffer";
 //插槽与col对应
 const props = defineProps({
   columns: {
@@ -63,6 +64,7 @@ let copyData = reactive([])
 let selectedCells = reactive([])
 let divDragging = ref(false)
 let changed = reactive([])
+let allowEdit= reactive(new Map)
 
 
 const handleMouseDown = (row,col)=>{
@@ -152,8 +154,18 @@ const isSelected = (row, col) => {
   });
 }
 
-const handleClick = () => {
-  contextMenuVisible.value = false
+const handleClick = (rowIndex,colIndex) => {
+  contextMenuVisible.value = false;
+  if(!allowEdit.has(`${rowIndex}${colIndex}`)){
+    allowEdit.clear()
+  }
+  //作用域插槽，传值
+}
+
+const handleDbclick = (rowIndex,colIndex) =>{
+  if(!allowEdit.get({rowIndex,colIndex})){
+    allowEdit.set(`${rowIndex}${colIndex}`,true)
+  }
 }
 
 const handleContextMenu = (event) =>{
