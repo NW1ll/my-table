@@ -15,7 +15,13 @@
 <!--  <HelloWorld msg="Welcome to Your Vue.js App"/>-->
 <!--  <test-one></test-one>-->
   <table-component :rows="rows" :columns="columns">
-    <input>
+<!--    循环row，划分列-->
+    <template #input>
+      <input >
+    </template>
+    <template #select="{row}">
+      <vxe-input size="mini" type="search" :model-value="row"></vxe-input>
+    </template>
   </table-component>
 </template>
 
@@ -43,12 +49,12 @@ export default {
     return {
       columns: [
         { field: 'id', title: 'ID',type:'input' },
-        { field: 'name', title: 'Name' ,type: 'select'},
+        { field: 'name', title: 'Name' ,type: 'input'},
         { field: 'email', title: 'Email' ,type:'input'},
-        { field: 'sex', title: 'Sex',type: 'select' },
+        { field: 'sex', title: 'Sex',type: 'input' },
         { field: 'score', title: 'Score' ,type:'input'},
         { field: 'home', title: 'Home' ,type:'input'},
-        { field: 'age', title: 'Age' ,type: 'select'},
+        { field: 'age', title: 'Age' ,type: 'input'},
         { field: 'hobby', title: 'Hobby' ,type:'input'},
         { field: 'height', title: 'Height' ,type:'input'},
         { field: 'weight', title: 'Weight' ,type:'input'},
@@ -280,3 +286,31 @@ export default {
 <style>
 
 </style>
+<!--<template>-->
+<!--  <div>-->
+<!--    <my-table :data="tableData">-->
+<!--      <my-column >111</my-column>-->
+<!--    </my-table>-->
+<!--  </div>-->
+<!--</template>-->
+
+<!--<script>-->
+<!--import MyTable from './components/test2-l.vue';-->
+<!--import MyColumn from './components/my-column.vue';-->
+
+<!--export default {-->
+<!--  components: {-->
+<!--    MyTable,-->
+<!--    MyColumn-->
+<!--  },-->
+<!--  data() {-->
+<!--    return {-->
+<!--      tableData: [-->
+<!--        { field1: 'Data 1', field2: 'Data 2', field3: 'Data 3' },-->
+<!--        { field1: 'Data 4', field2: 'Data 5', field3: 'Data 6' },-->
+<!--        // 添加更多数据行...-->
+<!--      ]-->
+<!--    };-->
+<!--  }-->
+<!--};-->
+<!--</script>-->

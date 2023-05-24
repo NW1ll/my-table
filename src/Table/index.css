@@ -30,7 +30,7 @@ td,th {
     text-align: center;
 }
 
-.pure-table td,.pure-table th {
+.pure-table th {
     border-left: 1px solid #cbcbcb;
     border-width: 0 0 0 1px;
     font-size: inherit;
@@ -57,3 +57,60 @@ td,th {
 .pure-table-bordered tbody>tr:last-child>td {
     border-bottom-width: 0;
 }
+.selected{
+    background-color: beige!important;
+    user-select: none
+
+}
+.cell-content {
+    user-select: auto;
+}
+.context-menu {
+    position: absolute;
+    background-color: #fff;
+    border: 1px solid #ccc;
+}
+
+.menu-item {
+    padding: 4px 8px;
+    cursor: pointer;
+}
+
+.menu-item:hover {
+    background-color: #ccc;
+}
+
+
+.selectedOne{
+    width: 7px;
+    height: 7px;
+    background-color: aqua ;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    cursor: crosshair
+}
+
+.selectedChange{
+    width: 7px;
+    height: 7px;
+    background-color: red ;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.divSelect{
+    border-left: 1px solid #cbcbcb;
+    border-width: 0 0 0 1px;
+    font-size: inherit;
+    margin: 0;
+    overflow: visible;
+    padding: .5em 1em;
+}
+
+.dSelect{
+    display: block;
+    padding: 0!important;
+}
+
