@@ -15,11 +15,12 @@
       <template #input="{row}">
         <vxe-input v-model="row.age" size="medium"></vxe-input>
       </template>
-<!--      <template #default="{row}">-->
-<!--        <vxe-select v-model="row.age" placeholder="默认尺寸">-->
-<!--          <vxe-option v-for="num in 15" :key="num" :value="num" :label="`选项${num}`"></vxe-option>-->
-<!--        </vxe-select>-->
-<!--      </template>-->
+      <template #select="{row}">
+        <vxe-select v-model="row.sex" placeholder="默认尺寸">
+          <vxe-option value="男" label="男"></vxe-option>
+          <vxe-option value="女" label="女"></vxe-option>
+        </vxe-select>
+      </template>
   </table-components>
 
 
@@ -31,6 +32,7 @@
 <script setup>
 // import TableComponent from "@/Table/TableComponent";
 import {reactive} from "vue";
+
 // import MyTable from "@/my-table/my-table.vue";
 import tableComponents from "@/Table2/TableComponents";
 // import MyTableDemo from "@/my-table/my-table-demo.vue";

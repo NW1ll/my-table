@@ -57,7 +57,7 @@ export default {
                 select.push({ row, col })
             }
         }
-        function throttled(fn, delay = 500) {
+        function throttled(fn, delay = 100) {
             let oldtime = Date.now()
             return function (...args) {
                 let newtime = Date.now()
@@ -267,7 +267,29 @@ export default {
                                         class:{selectedChange: isChanged(rowIndex, colIndex)}
                                     })
                                 ])
-                            }else {
+                            }
+                            else if (1 < len && col.type === T[1].value){
+                                let type = T[1].value
+                                return h('td',{
+                                    class:[{selected:isSelected(rowIndex, colIndex)},'divSelect'],
+                                    onDblclick:()=>handleDbclick(rowIndex,colIndex),
+                                    onClick:()=>handleClick(rowIndex,colIndex),
+                                    onMousedown:()=>handleMouseDown(rowIndex,colIndex),
+                                    onMousemove:()=>handleMouseMove(rowIndex,colIndex),
+                                    onMouseup:()=>handleMouseUp(),
+                                },[
+                                    allowEdit.get(`${rowIndex}${colIndex}`) && slots[type] ? slots[type]({
+                                        row:row
+                                    }) : factory.getFlyweight(row[col.field]),
+                                    h('div',{
+                                        class:{selectedOne : isSelectedOne(rowIndex, colIndex)},
+                                        onMousedown:()=>handleMouseDown(rowIndex,colIndex),
+                                    }),
+                                    h('div',{
+                                        class:{selectedChange: isChanged(rowIndex, colIndex)}
+                                    })
+                                ])
+                            } else {
                                 return h('td',{},[
                                     factory.getFlyweight(row[col.field])
                                 ])
