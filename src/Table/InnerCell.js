@@ -16,10 +16,6 @@ export default {
         return () => [
             h('div',{
                 class:[{selected:isSelected(props.row, props.col,selectedCells)},'divSelect'],
-
-                onClick(){
-                    console.log(changeSpan,props.row,props.col)
-                }
             },[
                 // eslint-disable-next-line no-constant-condition
                 !a.get(`${props.row}${props.col}`) ? h('span', {

@@ -3,7 +3,7 @@
     <table class="pure-table pure-table-bordered" @contextmenu.prevent="handleContextMenu" >
       <thead>
       <tr>
-        <th v-for="column in columns" :key="column.field">{{ column.title }}</th>
+        <th v-for="column in columns" :key="column.field">{{column.title}}</th>
       </tr>
       </thead>
       <tbody>
@@ -17,7 +17,9 @@
             @click="handleClick(rowIndex, colIndex)"
             @dblclick="handleDbclick(rowIndex, colIndex)"
         >
-          <slot v-if="allowEdit.get(`${rowIndex}${colIndex}`) && $slots.default"></slot>
+          <div v-if="allowEdit.get(`${rowIndex}${colIndex}`) && column.field === 'age' ">
+            <slot  name="inputName"  :row="row"></slot>
+          </div>
           <span v-else class="cell-content">
           {{ row[column.field] }}
           </span>
@@ -35,8 +37,6 @@
     </div>
   </div>
 </template>
-
-
 <script setup>
 import {ref, reactive, defineProps} from "vue";
 // import * as buffer from "buffer";
@@ -49,8 +49,14 @@ const props = defineProps({
   rows: {
     type: Array,
     required: true
+  },
+  editMode:{
+    type:Boolean,
+    required:false
   }
 })
+
+
 let isDragging = ref(false);
 let startRow = ref(null);
 let startCol = ref(null);
@@ -65,7 +71,6 @@ let selectedCells = reactive([])
 let divDragging = ref(false)
 let changed = reactive([])
 let allowEdit= reactive(new Map)
-
 
 const handleMouseDown = (row,col)=>{
   if(event.button === 0){
@@ -114,9 +119,9 @@ const MouseMove = (row,col) =>{
     }
     for(let i = 0; i < Len; i++){
       if(props.rows[firstRow + i][props.columns[firstCol].field] !== value){
-          let row = firstRow + i;
-          let col = firstCol;
-          changed.push({row,col})
+        let row = firstRow + i;
+        let col = firstCol;
+        changed.push({row,col})
       }
       // eslint-disable-next-line vue/no-mutating-props
       props.rows[firstRow + i][props.columns[firstCol].field] = value
@@ -166,6 +171,7 @@ const handleDbclick = (rowIndex,colIndex) =>{
   if(!allowEdit.get({rowIndex,colIndex})){
     allowEdit.set(`${rowIndex}${colIndex}`,true)
   }
+
 }
 
 const handleContextMenu = (event) =>{
