@@ -1,6 +1,6 @@
 import { h, reactive, ref, toRefs } from "vue";
 import { FlyweightFactory } from "@/FlyWeight";
-import "./index.css";
+import "./Table2/index.css";
 
 export default {
   name: "TableComponent",
@@ -138,12 +138,8 @@ export default {
       });
     };
 
-    const handleClick = (rowIndex, colIndex) => {
-      contextMenuVisible.value = false;
-      if (!allowEdit.has(`${rowIndex}${colIndex}`)) {
-        allowEdit.clear();
-      }
-      //作用域插槽，传值
+    const handleClick = (rowIndex, colIndex, e) => {
+      console.log(rowIndex, colIndex, e);
     };
 
     const handleDbclick = (rowIndex, colIndex) => {
@@ -240,15 +236,15 @@ export default {
       });
     };
 
-    // const getCell = (content) =>{
-    //     let val = cellCache.get(JSON.stringify(content))
-    //     if(!val){
-    //         val = content
-    //         cellCache.set(JSON.stringify(content),val)
-    //         console.log('new value')
-    //     }
-    //     return val
-    // }
+    const renderCell = (rowIndex, colIndex, text) => {
+      return h(
+        "td",
+        {
+          onClick: (e) => handleClick(rowIndex, colIndex, e),
+        },
+        [text]
+      );
+    };
 
     const headers = props.columns.map((column) => {
       return h("th", column.title);
@@ -265,94 +261,24 @@ export default {
           },
         },
         [
-          h("table", { class: ["pure-table", "pure-table-bordered"] }, [
-            h("thead", {}, [h("tr", headers)]),
-            h("tbody", {}, [
-              props.rows.map((row, rowIndex) => {
-                return h("tr", {}, [
-                  props.columns.map((col, colIndex) => {
-                    if (0 < len && col.type === T[0].value) {
-                      let type = T[0].value;
-                      return h(
-                        "td",
-                        {
-                          class: [
-                            { selected: isSelected(rowIndex, colIndex) },
-                            "divSelect",
-                          ],
-                          onDblclick: () => handleDbclick(rowIndex, colIndex),
-                          onClick: () => handleClick(rowIndex, colIndex),
-                          onMousedown: () =>
-                            handleMouseDown(rowIndex, colIndex),
-                          onMousemove: () =>
-                            handleMouseMove(rowIndex, colIndex),
-                          onMouseup: () => handleMouseUp(),
-                        },
-                        [
-                          allowEdit.get(`${rowIndex}${colIndex}`) && slots[type]
-                            ? slots[type]({
-                                row: row,
-                              })
-                            : factory.getFlyweight(row[col.field]),
-                          h("div", {
-                            class: {
-                              selectedOne: isSelectedOne(rowIndex, colIndex),
-                            },
-                            onMousedown: () =>
-                              handleMouseDown(rowIndex, colIndex),
-                          }),
-                          h("div", {
-                            class: {
-                              selectedChange: isChanged(rowIndex, colIndex),
-                            },
-                          }),
-                        ]
-                      );
-                    } else if (1 < len && col.type === T[1].value) {
-                      let type = T[1].value;
-                      return h(
-                        "td",
-                        {
-                          class: [
-                            { selected: isSelected(rowIndex, colIndex) },
-                            "divSelect",
-                          ],
-                          onDblclick: () => handleDbclick(rowIndex, colIndex),
-                          onClick: () => handleClick(rowIndex, colIndex),
-                          onMousedown: () =>
-                            handleMouseDown(rowIndex, colIndex),
-                          onMousemove: () =>
-                            handleMouseMove(rowIndex, colIndex),
-                          onMouseup: () => handleMouseUp(),
-                        },
-                        [
-                          allowEdit.get(`${rowIndex}${colIndex}`) && slots[type]
-                            ? slots[type]({
-                                row: row,
-                              })
-                            : factory.getFlyweight(row[col.field]),
-                          h("div", {
-                            class: {
-                              selectedOne: isSelectedOne(rowIndex, colIndex),
-                            },
-                            onMousedown: () =>
-                              handleMouseDown(rowIndex, colIndex),
-                          }),
-                          h("div", {
-                            class: {
-                              selectedChange: isChanged(rowIndex, colIndex),
-                            },
-                          }),
-                        ]
-                      );
-                    } else {
-                      return h("td", {}, factory.getFlyweight(row[col.field]));
-                    }
-                  }),
-                ]);
-              }),
-            ]), //尝试添加式
-          ]),
+          h(
+            "table",
+            {
+              class: ["pure-table", "pure-table-bordered"],
+            },
+            [
+              h("thead", {}, [h("tr", headers)]),
+              h("tbody", {}, [
+                props.rows.map((row, rowIndex) => {
+                  return h("tr", {}, [
+                    props.columns.map((col, colIndex) => {
+                      return renderCell(rowIndex, colIndex, row[col.field]);
+                    }),
+                  ]);
+                }),
+              ]), //尝试添加式
+            ]
+          ),
         ]
       );
   },
