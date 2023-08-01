@@ -10,7 +10,7 @@
   "dependencies": {
     "ant-design-vue": "^3.2.20",
     "core-js": "^3.8.3",
-    "object-sizeof": "^2.6.1",
+    "object-sizeof": "^2.6.3",
     "vue": "3.3",
     "vxe-table": "^4.3.12",
     "xe-utils": "^3.5.7"

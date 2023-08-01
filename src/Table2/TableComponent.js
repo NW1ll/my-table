@@ -1,5 +1,5 @@
 import { h, reactive, ref, toRefs } from "vue";
-import { FlyweightFactory } from "@/FlyWeight";
+import flyweight from "@/FlyWeight";
 import "./index.css";
 
 export default {
@@ -17,9 +17,13 @@ export default {
       type: Array,
       required: false,
     },
+    flyweight: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   setup(props, { slots }) {
-    const factory = new FlyweightFactory();
     let isDragging = ref(false);
     let startRow = ref(null);
     let startCol = ref(null);
@@ -293,7 +297,9 @@ export default {
                             ? slots[type]({
                                 row: row,
                               })
-                            : factory.getFlyweight(row[col.field]),
+                            : props.flyweight
+                            ? flyweight.getFlyweight(row[col.field]).value
+                            : row[col.field],
                           h("div", {
                             class: {
                               selectedOne: isSelectedOne(rowIndex, colIndex),
@@ -330,7 +336,9 @@ export default {
                             ? slots[type]({
                                 row: row,
                               })
-                            : factory.getFlyweight(row[col.field]),
+                            : props.flyweight
+                            ? flyweight.getFlyweight(row[col.field]).value
+                            : row[col.field],
                           h("div", {
                             class: {
                               selectedOne: isSelectedOne(rowIndex, colIndex),
@@ -346,7 +354,12 @@ export default {
                         ]
                       );
                     } else {
-                      return h("td", {}, factory.getFlyweight(row[col.field]));
+                      return h(
+                        "td",
+                        {}
+                        // flyweight.getFlyweight(row[col.field])
+                        // row[col.field]
+                      );
                     }
                   }),
                 ]);

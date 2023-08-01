@@ -1,28 +1,40 @@
-export class Flyweight {
-    constructor(sharedState) {
-        this.sharedState = sharedState;
+import { ref } from "vue";
+
+class Factory {
+  constructor(newRef, isRef) {
+    if (isRef) this.newRef = ref(newRef);
+    else {
+      this.newRef = newRef;
     }
+  }
 }
 
+class FlyweightFactory {
+  constructor() {
+    this.flyweights = new Map();
+  }
+  // 转换成数组形式
+  convertKey(state) {
+    const arrayTemp = [];
+    arrayTemp.push(state);
+    return arrayTemp;
+  }
+  useFlyweight(key, sharedState) {
+    if (!this.flyweights.has(key)) {
+      const newFactory = new Factory(sharedState, true);
+      console.log(newFactory);
+      this.flyweights.set(key, newFactory.newRef);
+    }
+    return this.flyweights.get(key);
+  }
 
-export class FlyweightFactory {
-        constructor() {
-            this.flyweights = {};
-            // for (const state of initialFlyweights) {
-            // this.flyweights[this.getKey(state)] = new Flyweight(state);
-            // }
-        }
-
-        getKey(state){
-            return JSON.stringify(state)
-        }
-        getFlyweight(sharedState){
-            const key = this.getKey(sharedState);
-            if(!(key in this.flyweights)){
-                this.flyweights[key] = new Flyweight(sharedState);
-            }
-            return this.flyweights[key].sharedState;
-        }
+  getFlyweight(sharedState) {
+    const key = `${sharedState}_key`;
+    // const value = this.convertKey(sharedState);
+    // console.log(value);
+    return this.useFlyweight(key, sharedState);
+  }
 }
-
-
+const newFactory = new FlyweightFactory();
+export default newFactory;
+// 另一种尝试
