@@ -11,7 +11,7 @@
   <!--  <test-one></test-one>-->
   <!--  </my-table-demo>-->
 
-  <!--  <test-one />-->
+  <test-one />
   <TableComponent
     :rows="row"
     :columns="columns"
@@ -2768,7 +2768,7 @@ let row = reactive([
 ]);
 // console.log(sizeof(rows), sizeof(row));
 // console.log(rows, row);
-
+console.log(row);
 // let newRows = reactive(Array(rows.length).fill(0).map(()=> new Object()))
 
 // console.log(factory,newRows)

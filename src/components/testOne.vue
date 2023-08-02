@@ -481,13 +481,13 @@ export default defineComponent({
       const list5 = [
         {
           id: id,
-          name: newFactory.getFlyweight("name"),
+          name: newFactory.getFlyweight("name").value,
           nickname: nikeName,
-          role: newFactory.getFlyweight("2222"),
+          role: newFactory.getFlyweight("2222").value,
           sex: sex,
           sex2: sex2,
           num1: num1,
-          age: newFactory.getFlyweight("age"),
+          age: newFactory.getFlyweight("age").value,
           address: address,
           date12: date12,
           date13: date23,

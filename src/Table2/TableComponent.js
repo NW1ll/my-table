@@ -47,7 +47,7 @@ export default {
           divDragging.value = true;
         }
         isDragging.value = true;
-        console.log("zuo");
+        console.log("zuo", props.rows);
         // Set the startRow, startCol, endRow and endCol properties
         startRow.value = row;
         startCol.value = col;
