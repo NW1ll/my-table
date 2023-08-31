@@ -58,8 +58,8 @@ uploadManager.add("b", "name4", 3000);
 let startUpload = function () {
   for (let i = 0; i < uploadManager.uploadDatas.length; i++) {
     const element = uploadManager.uploadDatas[i];
-    let upload = uploadFactory.create(element.type);
-    upload.fileName = element.fileName;
+    let upload = uploadFactory.create(element.type); //内部状态
+    upload.fileName = element.fileName; //设置外部状态
     upload.fileSize = element.fileSize;
     upload.doUpload();
   }
