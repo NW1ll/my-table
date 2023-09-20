@@ -156,40 +156,44 @@ export default {
       }
     };
 
-    // const handleContextMenu = (event) =>{
-    //     contextMenuVisible.value = true;
-    //
-    //     // 获取鼠标点击的位置
-    //     const x = event.clientX;
-    //     const y = event.clientY;
-    //     console.log(x,y)
-    //     // 获取点击的元素
-    //     // const target = event.target;
-    //
-    //     // 计算菜单的位置
-    //     // const rect = target.getBoundingClientRect();
-    //     contextMenuTop.value = y ;
-    //     contextMenuLeft.value = x ;
-    //     // 阻止默认的右键菜单
-    //     event.preventDefault();
-    // }
-    // const copyCells = ()=> {
-    //     let initRow = selectedCells[0].row,initCol = selectedCells[0].col;
-    //     let len = selectedCells.length;
-    //     let width = selectedCells[len - 1].row - selectedCells[0].row + 1;
-    //     console.log(width,len)
-    //     let copydata = new Array(width).fill('').map(()=> new Array(Math .floor(len/width) ).fill(''))
-    //     selectedCells.forEach((item) =>{
-    //         let rowIndex = item.row;
-    //         let colIndex = item.col;
-    //         copydata[rowIndex - initRow][colIndex - initCol] = props.rows[rowIndex][props.columns[colIndex].field]
-    //     })
-    //     copyData = copydata
-    //
-    //     contextMenuVisible.value = false
-    //     // 复制所选中的单元格
-    //     // ...
-    // }
+    const handleContextMenu = (event) => {
+      contextMenuVisible.value = true;
+
+      // 获取鼠标点击的位置
+      const x = event.clientX;
+      const y = event.clientY;
+      console.log(x, y);
+      // 获取点击的元素
+      // const target = event.target;
+
+      // 计算菜单的位置
+      // const rect = target.getBoundingClientRect();
+      contextMenuTop.value = y;
+      contextMenuLeft.value = x;
+      // 阻止默认的右键菜单
+      event.preventDefault();
+    };
+    const copyCells = () => {
+      let initRow = selectedCells[0].row,
+        initCol = selectedCells[0].col;
+      let len = selectedCells.length;
+      let width = selectedCells[len - 1].row - selectedCells[0].row + 1;
+      console.log(width, len);
+      let copydata = new Array(width)
+        .fill("")
+        .map(() => new Array(Math.floor(len / width)).fill(""));
+      selectedCells.forEach((item) => {
+        let rowIndex = item.row;
+        let colIndex = item.col;
+        copydata[rowIndex - initRow][colIndex - initCol] =
+          props.rows[rowIndex][props.columns[colIndex].field];
+      });
+      copyData = copydata;
+
+      contextMenuVisible.value = false;
+      // 复制所选中的单元格
+      // ...
+    };
     const handleKeyDown = (event) => {
       console.log("keydown");
       if (event.ctrlKey && event.key === "c") {
@@ -222,17 +226,19 @@ export default {
       }
     };
 
-    // const pasteCells = () =>{
-    //     let rowIndex = selectedCells[0].row,colIndex = selectedCells[0].col;
-    //     for(let i = 0 ; i < copyData.length; i++){
-    //         for(let j = 0; j < copyData[0].length;j++){
-    //             // eslint-disable-next-line vue/no-mutating-props
-    //             props.rows[i + rowIndex][props.columns[j + colIndex].field] = copyData[i][j]
-    //             selectedCells.push({ row: i + rowIndex, col: j + colIndex});
-    //         }
-    //     }
-    // }
-    //
+    const pasteCells = () => {
+      let rowIndex = selectedCells[0].row,
+        colIndex = selectedCells[0].col;
+      for (let i = 0; i < copyData.length; i++) {
+        for (let j = 0; j < copyData[0].length; j++) {
+          // eslint-disable-next-line vue/no-mutating-props
+          props.rows[i + rowIndex][props.columns[j + colIndex].field] =
+            copyData[i][j];
+          selectedCells.push({ row: i + rowIndex, col: j + colIndex });
+        }
+      }
+    };
+
     const isSelectedOne = (row, col) => {
       return select.some(function (cell) {
         return cell.row === row && cell.col === col;
@@ -243,16 +249,6 @@ export default {
         return cell.row === row && cell.col === col;
       });
     };
-
-    // const getCell = (content) =>{
-    //     let val = cellCache.get(JSON.stringify(content))
-    //     if(!val){
-    //         val = content
-    //         cellCache.set(JSON.stringify(content),val)
-    //         console.log('new value')
-    //     }
-    //     return val
-    // }
 
     const headers = props.columns.map((column) => {
       return h("th", column.title);
@@ -353,12 +349,122 @@ export default {
                           }),
                         ]
                       );
-                    } else {
+                    } else if (2 < len && col.type === T[2].value) {
+                      let type = T[2].value;
                       return h(
                         "td",
-                        {}
-                        // flyweight.getFlyweight(row[col.field])
-                        // row[col.field]
+                        {
+                          class: [
+                            { selected: isSelected(rowIndex, colIndex) },
+                            "divSelect",
+                          ],
+                          onDblclick: () => handleDbclick(rowIndex, colIndex),
+                          onClick: () => handleClick(rowIndex, colIndex),
+                          onMousedown: () =>
+                            handleMouseDown(rowIndex, colIndex),
+                          onMousemove: () =>
+                            handleMouseMove(rowIndex, colIndex),
+                          onMouseup: () => handleMouseUp(),
+                        },
+                        [
+                          allowEdit.get(`${rowIndex}${colIndex}`) && slots[type]
+                            ? slots[type]({
+                                row: row,
+                              })
+                            : props.flyweight
+                            ? flyweight.getFlyweight(row[col.field])
+                            : row[col.field],
+                          h("div", {
+                            class: {
+                              selectedOne: isSelectedOne(rowIndex, colIndex),
+                            },
+                            onMousedown: () =>
+                              handleMouseDown(rowIndex, colIndex),
+                          }),
+                          h("div", {
+                            class: {
+                              selectedChange: isChanged(rowIndex, colIndex),
+                            },
+                          }),
+                        ]
+                      );
+                    } else if (3 < len && col.type === T[3].value) {
+                      let type = T[3].value;
+                      return h(
+                        "td",
+                        {
+                          class: [
+                            { selected: isSelected(rowIndex, colIndex) },
+                            "divSelect",
+                          ],
+                          onDblclick: () => handleDbclick(rowIndex, colIndex),
+                          onClick: () => handleClick(rowIndex, colIndex),
+                          onMousedown: () =>
+                            handleMouseDown(rowIndex, colIndex),
+                          onMousemove: () =>
+                            handleMouseMove(rowIndex, colIndex),
+                          onMouseup: () => handleMouseUp(),
+                        },
+                        [
+                          allowEdit.get(`${rowIndex}${colIndex}`) && slots[type]
+                            ? slots[type]({
+                                row: row,
+                              })
+                            : props.flyweight
+                            ? flyweight.getFlyweight(row[col.field])
+                            : row[col.field],
+                          h("div", {
+                            class: {
+                              selectedOne: isSelectedOne(rowIndex, colIndex),
+                            },
+                            onMousedown: () =>
+                              handleMouseDown(rowIndex, colIndex),
+                          }),
+                          h("div", {
+                            class: {
+                              selectedChange: isChanged(rowIndex, colIndex),
+                            },
+                          }),
+                        ]
+                      );
+                    } else if (4 < len && col.type === T[4].value) {
+                      let type = T[4].value;
+                      return h(
+                        "td",
+                        {
+                          class: [
+                            { selected: isSelected(rowIndex, colIndex) },
+                            "divSelect",
+                          ],
+                          onDblclick: () => handleDbclick(rowIndex, colIndex),
+                          onClick: () => handleClick(rowIndex, colIndex),
+                          onMousedown: () =>
+                            handleMouseDown(rowIndex, colIndex),
+                          onMousemove: () =>
+                            handleMouseMove(rowIndex, colIndex),
+                          onMouseup: () => handleMouseUp(),
+                        },
+                        [
+                          allowEdit.get(`${rowIndex}${colIndex}`) && slots[type]
+                            ? slots[type]({
+                                row: row,
+                              })
+                            : props.flyweight
+                            ? flyweight.getFlyweight(row[col.field])
+                            : row[col.field],
+                          h("div", {
+                            class: {
+                              selectedOne: isSelectedOne(rowIndex, colIndex),
+                            },
+                            onMousedown: () =>
+                              handleMouseDown(rowIndex, colIndex),
+                          }),
+                          h("div", {
+                            class: {
+                              selectedChange: isChanged(rowIndex, colIndex),
+                            },
+                          }),
+                        ]
                       );
                     }
                   }),

@@ -1,4 +1,4 @@
-import { h } from 'vue'
+import { h } from "vue";
 import innerCell from "@/Table/InnerCell";
 //
 // // const selectedCells = [];
@@ -110,39 +110,37 @@ import innerCell from "@/Table/InnerCell";
 //     endCol = null;
 // }
 
-
-
 export class InputCell {
-    constructor(content,slots) {
-        this.content = content
-        this.slots = slots
-    }
-    render(rowIndex,columnIndex){
-        return h('td', {
-            class:['tdSelect'],
-
-        },[h(innerCell,{slot:this.slots,row:rowIndex,col:columnIndex,content:this.content})])
-    }
-//或者事件写在插槽内部，后续比较性能
+  constructor(content, slots) {
+    this.content = content;
+    this.slots = slots;
+  }
+  render(rowIndex, columnIndex) {
+    return h(
+      "td",
+      {
+        class: ["tdSelect"],
+      },
+      [
+        h(innerCell, {
+          slot: this.slots,
+          row: rowIndex,
+          col: columnIndex,
+          content: this.content,
+        }),
+      ]
+    );
+  }
+  //或者事件写在插槽内部，后续比较性能
 }
 
 export class SelectCell {
-    constructor(content,slots) {
-        this.content = content
-        this.slots = slots
-        this.sharedCell = h('td', {
-
-        },[
-            h('span',this.content)
-        ])
-    }
-    render(){
-        return h('td', {
-        },[
-            h('span',this.content)
-        ])
-    }
+  constructor(content, slots) {
+    this.content = content;
+    this.slots = slots;
+    this.sharedCell = h("td", {}, [h("span", this.content)]);
+  }
+  render() {
+    return h("td", {}, [h("span", this.content)]);
+  }
 }
-
-
-
