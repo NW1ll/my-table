@@ -39,7 +39,9 @@ export default {
     let changed = reactive([]);
     let allowEdit = reactive(new Map());
     let T = toRefs(props.colTypes);
+    let makeDiff = reactive([]);
     const len = T.length;
+    const pasteByRule = ref(true);
 
     const handleMouseDown = (row, col) => {
       if (event.button === 0) {
@@ -73,14 +75,18 @@ export default {
     }
 
     const MouseMove = (row, col) => {
+      // 拖动启动div启动赋值功能
       if (isDragging.value && divDragging.value) {
+        // copydata 分开
         endRow.value = row;
         endCol.value = col;
-        // Clear the selectedCells array
+        // 清除之前选中的单元格
         selectedCells.splice(0, selectedCells.length);
         // changed.splice(0,changed.length)
-        let firstRow, firstCol, value, Len;
+        let firstRow, firstCol, Len, value;
         // Calculate the range of cells that should be selected
+
+        // 获取赋值的选中单元格
         for (
           let i = Math.min(startRow.value, endRow.value);
           i <= Math.max(startRow.value, endRow.value);
@@ -92,17 +98,31 @@ export default {
           Len = selectedCells.length;
           value = props.rows[firstRow][props.columns[firstCol].field];
         }
-        for (let i = 0; i < Len; i++) {
-          if (
-            props.rows[firstRow + i][props.columns[firstCol].field] !== value
-          ) {
+
+        const diff = makeDiff[1] - makeDiff[0];
+        if (pasteByRule.value && makeDiff.length) {
+          for (let i = 1; i < Len; i++) {
             let row = firstRow + i;
             let col = firstCol;
             changed.push({ row, col });
+            // eslint-disable-next-line vue/no-mutating-props
+            props.rows[firstRow + i][props.columns[firstCol].field] =
+              Number(value) + (i + 1) * diff;
           }
-          // eslint-disable-next-line vue/no-mutating-props
-          props.rows[firstRow + i][props.columns[firstCol].field] = value;
+        } else {
+          for (let i = 0; i < Len; i++) {
+            if (
+              props.rows[firstRow + i][props.columns[firstCol].field] !== value
+            ) {
+              let row = firstRow + i;
+              let col = firstCol;
+              changed.push({ row, col });
+            }
+            // eslint-disable-next-line vue/no-mutating-props
+            props.rows[firstRow + i][props.columns[firstCol].field] = value;
+          }
         }
+        //选取区域
       } else if (isDragging.value) {
         // Update the endRow and endCol properties
         endRow.value = row;
@@ -123,6 +143,9 @@ export default {
             selectedCells.push({ row: i, col: j });
           }
         }
+        let pObj = selectedCells.pop();
+        select[0] = pObj;
+        selectedCells.push(pObj);
       }
     };
     const handleMouseMove = throttled(MouseMove, 100);
@@ -195,6 +218,23 @@ export default {
       // ...
     };
     const handleKeyDown = (event) => {
+      if (event.ctrlKey && event.key === "r") {
+        let initRow = selectedCells[0].row,
+          initCol = selectedCells[0].col;
+        let len = selectedCells.length;
+        let width = selectedCells[len - 1].row - selectedCells[0].row + 1;
+        console.log(width, len);
+        let copydata = new Array(width)
+          .fill("")
+          .map(() => new Array(Math.floor(len / width)).fill(""));
+        selectedCells.forEach((item) => {
+          let rowIndex = item.row;
+          let colIndex = item.col;
+          copydata[rowIndex - initRow][colIndex - initCol] =
+            props.rows[rowIndex][props.columns[colIndex].field];
+        });
+        makeDiff = copydata;
+      }
       console.log("keydown");
       if (event.ctrlKey && event.key === "c") {
         let initRow = selectedCells[0].row,
@@ -244,6 +284,7 @@ export default {
         return cell.row === row && cell.col === col;
       });
     };
+
     const isChanged = (row, col) => {
       return changed.some(function (cell) {
         return cell.row === row && cell.col === col;

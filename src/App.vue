@@ -92,10 +92,10 @@ for (let i = 0; i < LEN; i++) {
   }
 }
 // 检验是否占用相同内存
-for (let i = 0; i < LEN; i++) {
-  if (i % 2 === 0 && i > 2) {
-    console.log(arr1[i].id === arr1[i - 2].id);
-  }
-}
+// for (let i = 0; i < LEN; i++) {
+//   if (i % 2 === 0 && i > 2) {
+//     console.log(arr1[i].id === arr1[i - 2].id);
+//   }
+// }
 const newRowFy = reactive(arr1);
 </script>
