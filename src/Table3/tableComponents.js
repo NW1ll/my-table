@@ -45,6 +45,10 @@ export default {
     let height = ref(0);
     let left = ref(0);
     let width = ref(0);
+    // let lastWidth = ref(0);
+
+    // // lastWidth消亡次数
+    // let i = ref(2);
 
     const calculateLeft = (target) => {
       if(!target) return 0;
@@ -72,6 +76,14 @@ export default {
         startCol.value = col;
         endRow.value = row;
         endCol.value = col;
+        // if(i.value === 0){
+        //   lastWidth = 0;
+        // }
+        // if(i.value >= 0){
+        //   i.value--;
+        // }
+        // console.log(i.value)
+
         select.splice(0, select.length);
         selectedCells.splice(0, selectedCells.length);
         // Add the clicked cell to the selectedCells array
@@ -165,6 +177,7 @@ export default {
         // Clear the selectedCells array
         selectedCells.splice(0, selectedCells.length);
         width = calculateWith(event.target,row,col) !== 0 ? calculateWith(event.target,row,col) : event.target.offsetWidth;
+        // lastWidth = width;
         height = event.target.offsetHeight;
         // Calculate the range of cells that should be selected
         for (
@@ -189,9 +202,7 @@ export default {
 
     const handleMouseUp = () => {
       wid = 0;
-      oldCol = 0
-
-
+      oldCol = 0;
       divDragging.value = false;
       isDragging.value = false;
       startRow.value = null;
@@ -282,7 +293,6 @@ export default {
           initCol = selectedCells[0].col;
         let len = selectedCells.length;
         let width = selectedCells[len - 1].row - selectedCells[0].row + 1;
-        console.log(width, len);
         let copydata = new Array(width)
           .fill("")
           .map(() => new Array(Math.floor(len / width)).fill(""));
@@ -299,9 +309,13 @@ export default {
           colIndex = selectedCells[0].col;
         for (let i = 0; i < copyData.length; i++) {
           for (let j = 0; j < copyData[0].length; j++) {
-            props.rows[i + rowIndex][props.columns[j + colIndex].field] =
-              copyData[i][j];
-            selectedCells.push({ row: i + rowIndex, col: j + colIndex });
+            if(props.rows[i + rowIndex][props.columns[j + colIndex].field] !==
+              copyData[i][j]){
+// eslint-disable-next-line vue/no-mutating-props
+              props.rows[i + rowIndex][props.columns[j + colIndex].field] =
+                copyData[i][j];
+              changed.push({ row: i + rowIndex, col: j + colIndex });
+            }
           }
         }
       }
@@ -357,6 +371,10 @@ export default {
     });
 
     const getSelectionStyle = (bounds,left,height,width) =>{
+      // width = lastWidth || width; 保存复制之前的区域宽度
+      // console.log(lastWidth,width)
+      //TODO 通过剪切板状态判断是否使用lastWidth，从而设置粘贴后区域样式
+      //TODO 通过剪切板状态启用新的边框样式
       return {
         top: bounds.value.minRow * height + 47 +"px",
         left:  left + "px",
