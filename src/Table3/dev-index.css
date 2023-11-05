@@ -1,26 +1,8 @@
-html {
-    font-family: sans-serif;
-    -ms-text-size-adjust: 100%;
-    -webkit-text-size-adjust: 100%;
-}
-
-body {
-    margin: 10px;
-}
-table {
-    border-collapse: collapse;
-    border-spacing: 0;
-}
-
-td,th {
-    padding: 0;
-}
-
 .pure-table {
     border-collapse: collapse;
     border-spacing: 0;
     empty-cells: show;
-    border: 1px solid #cbcbcb;
+    position: relative;
 }
 
 .pure-table caption {
@@ -31,13 +13,14 @@ td,th {
 }
 
 .pure-table td,.pure-table th {
-    border-left: 1px solid #cbcbcb;
-    border-width: 0 0 0 1px;
+    box-sizing: content-box;
+    border: 2px solid #cbc7c7;
     font-size: inherit;
     margin: 0;
     overflow: visible;
     padding: .5em 1em;
 }
+
 
 .pure-table thead {
     background-color: #e0e0e0;
@@ -46,37 +29,24 @@ td,th {
     vertical-align: bottom;
 }
 
-.pure-table td {
-    background-color: transparent;
-}
 
-.pure-table-bordered td {
-    border-bottom: 1px solid #cbcbcb;
-}
 
 .pure-table-bordered tbody>tr:last-child>td {
     border-bottom-width: 0;
 }
 
 .selected{
-    background-color: beige!important;
+    /*outline: cornflowerblue 2px solid ;*/
 }
+
 .cell-content {
     user-select: auto;
 }
-.context-menu {
-    position: absolute;
-    background-color: #fff;
-    border: 1px solid #ccc;
-}
+
 
 .menu-item {
     padding: 4px 8px;
     cursor: pointer;
-}
-
-.menu-item:hover {
-    background-color: #ccc;
 }
 
 
@@ -101,4 +71,10 @@ td,th {
 .divSelect{
     user-select: none;
     position: relative;
+}
+
+.selected-region {
+    position: absolute;
+    outline: cornflowerblue 2px solid ;
+    pointer-events: none; /* 让上层元素不响应事件 */
 }

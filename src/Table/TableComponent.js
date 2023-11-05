@@ -20,42 +20,42 @@ export default {
         const allowEdit = reactive(new Map());
         const changeSpan = reactive(new Map())
         const selectedCells = reactive([]);
-        // let copyData = reactive([])
+        let copyData = reactive([])
         provide('allowEdit',allowEdit)
         provide('selectedCells',selectedCells)
         provide('changeSpan',changeSpan)
-        // const handleKeyDown = () =>{
-        //     console.log('keydown')
-        //     if (event.ctrlKey && event.key === 'c') {
-        //         let initRow = selectedCells[0].row,initCol = selectedCells[0].col;
-        //         let len = selectedCells.length;
-        //         let width = selectedCells[len - 1].row - selectedCells[0].row + 1;
-        //         let copydata = new Array(width).fill('').map(()=> new Array(Math .floor(len/width) ).fill(''))
-        //         selectedCells.forEach((item) =>{
-        //             let rowIndex = item.row;
-        //             let colIndex = item.col;
-        //             copydata[rowIndex - initRow][colIndex - initCol] = props.rows[rowIndex][props.columns[colIndex].field]
-        //         })
-        //         copyData = copydata
-        //     }else if(event.ctrlKey && event.key === 'v'){
-        //         let rowIndex = selectedCells[0].row,colIndex = selectedCells[0].col;
-        //         for(let i = 0 ; i < copyData.length; i++){
-        //             for(let j = 0; j < copyData[0].length;j++){
-        //                 // eslint-disable-next-line vue/no-mutating-props
-        //                 // props.rows[i + rowIndex][props.columns[j + colIndex].field] = copyData[i][j]
-        //                 changeSpan.set(`${i + rowIndex}${j + colIndex}`,copyData[i][j])
-        //                 selectedCells.push({ row: i + rowIndex, col: j + colIndex});
-        //             }
-        //         }
-        //     }
-        // }
+        const handleKeyDown = () =>{
+            console.log('keydown')
+            if (event.ctrlKey && event.key === 'c') {
+                let initRow = selectedCells[0].row,initCol = selectedCells[0].col;
+                let len = selectedCells.length;
+                let width = selectedCells[len - 1].row - selectedCells[0].row + 1;
+                let copydata = new Array(width).fill('').map(()=> new Array(Math .floor(len/width) ).fill(''))
+                selectedCells.forEach((item) =>{
+                    let rowIndex = item.row;
+                    let colIndex = item.col;
+                    copydata[rowIndex - initRow][colIndex - initCol] = props.rows[rowIndex][props.columns[colIndex].field]
+                })
+                copyData = copydata
+            }else if(event.ctrlKey && event.key === 'v'){
+                let rowIndex = selectedCells[0].row,colIndex = selectedCells[0].col;
+                for(let i = 0 ; i < copyData.length; i++){
+                    for(let j = 0; j < copyData[0].length;j++){
+                        // eslint-disable-next-line vue/no-mutating-props
+                        // props.rows[i + rowIndex][props.columns[j + colIndex].field] = copyData[i][j]
+                        changeSpan.set(`${i + rowIndex}${j + colIndex}`,copyData[i][j])
+                        selectedCells.push({ row: i + rowIndex, col: j + colIndex});
+                    }
+                }
+            }
+        }
 
-        // const render = (rowIndex,columnIndex,content) =>{
-        //     return h('td', {
-        //         class:['tdSelect'],
-        //
-        //     },[h(innerCell,{row:rowIndex,col:columnIndex,content:content})])
-        // }
+        const render = (rowIndex,columnIndex,content) =>{
+            return h('td', {
+                class:['tdSelect'],
+
+            },[h(innerCell,{row:rowIndex,col:columnIndex,content:content})])
+        }
 
 
         const getCell = (row, column,colType,rowIndex,columnIndex) =>{

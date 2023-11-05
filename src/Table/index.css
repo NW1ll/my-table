@@ -60,7 +60,6 @@ td,th {
 .selected{
     background-color: beige!important;
     user-select: none
-
 }
 .cell-content {
     user-select: auto;

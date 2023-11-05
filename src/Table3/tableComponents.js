@@ -1,6 +1,6 @@
-import { h, reactive, ref, toRefs } from "vue";
+import {computed, h, reactive, ref, toRefs} from "vue";
 import flyweight from "@/FlyWeight";
-import "./index.css";
+import "./dev-index.css";
 
 export default {
   name: "TableComponent",
@@ -42,6 +42,19 @@ export default {
     let makeDiff = reactive([]);
     const len = T.length;
     const pasteByRule = ref(true);
+    let height = ref(0);
+    let left = ref(0);
+    let width = ref(0);
+
+    const calculateLeft = (target) => {
+      if(!target) return 0;
+      let res = 0;
+      while (target){
+        res += target.offsetWidth
+        target = target.previousElementSibling
+      }
+      return res;
+    }
 
     const handleMouseDown = (row, col) => {
       if (event.button === 0) {
@@ -51,6 +64,10 @@ export default {
         isDragging.value = true;
         // console.log("zuo", props.rows);
         // Set the startRow, startCol, endRow and endCol properties
+
+        left = calculateLeft(event.target.previousElementSibling);
+        height = event.target.offsetHeight;
+        width = event.target.offsetWidth;
         startRow.value = row;
         startCol.value = col;
         endRow.value = row;
@@ -74,7 +91,25 @@ export default {
       };
     }
 
+    let oldCol = 0;
+    let wid = 0
+
+    const calculateWith = (target,row,col) => {
+      // 距离来判断
+      console.log(col)
+      if(oldCol < col){
+        wid += target.offsetWidth
+        oldCol = col;
+      }else if(oldCol > col) {
+        wid -= target.nextElementSibling.offsetWidth
+        oldCol = col;
+      }
+      console.log(wid)
+      return wid
+    }
+
     const MouseMove = (row, col) => {
+
       // 拖动启动div启动赋值功能
       if (isDragging.value && divDragging.value) {
         // copydata 分开
@@ -129,6 +164,8 @@ export default {
         endCol.value = col;
         // Clear the selectedCells array
         selectedCells.splice(0, selectedCells.length);
+        width = calculateWith(event.target,row,col) !== 0 ? calculateWith(event.target,row,col) : event.target.offsetWidth;
+        height = event.target.offsetHeight;
         // Calculate the range of cells that should be selected
         for (
           let i = Math.min(startRow.value, endRow.value);
@@ -151,6 +188,10 @@ export default {
     const handleMouseMove = throttled(MouseMove, 100);
 
     const handleMouseUp = () => {
+      wid = 0;
+      oldCol = 0
+
+
       divDragging.value = false;
       isDragging.value = false;
       startRow.value = null;
@@ -218,7 +259,7 @@ export default {
       // ...
     };
     const handleKeyDown = (event) => {
-      if (event.ctrlKey && event.key === "r") {
+      if (event.ctrlKey && event.key === "x") {
         let initRow = selectedCells[0].row,
           initCol = selectedCells[0].col;
         let len = selectedCells.length;
@@ -291,6 +332,40 @@ export default {
       });
     };
 
+    const selectionBounds = computed(() => {
+      if (selectedCells.length === 0) {
+        return null;
+      }
+      const minRow = Math.min(
+        ...selectedCells.map((cell) => cell.row)
+      );
+      const maxRow = Math.max(
+        ...selectedCells.map((cell) => cell.row)
+      );
+      const minCol = Math.min(
+        ...selectedCells.map((cell) => cell.col)
+      );
+      const maxCol = Math.max(
+        ...selectedCells.map((cell) => cell.col)
+      );
+      return {
+        minRow,
+        maxRow,
+        minCol,
+        maxCol,
+      };
+    });
+
+    const getSelectionStyle = (bounds,left,height,width) =>{
+      return {
+        top: bounds.value.minRow * height + 47 +"px",
+        left:  left + "px",
+        width: width + "px",
+        height: (bounds.value.maxRow - bounds.value.minRow + 1) * height + "px",
+      };
+    };
+
+
     const headers = props.columns.map((column) => {
       return h("th", column.title);
     });
@@ -306,7 +381,8 @@ export default {
           },
         },
         [
-          h("table", { class: ["pure-table", "pure-table-bordered"] }, [
+          h("table", { class: ["pure-table", "pure-table-bordered"],
+            onMouseup: () => handleMouseUp(),}, [
             h("thead", {}, [h("tr", headers)]),
             h("tbody", {}, [
               props.rows.map((row, rowIndex) => {
@@ -327,7 +403,6 @@ export default {
                             handleMouseDown(rowIndex, colIndex),
                           onMousemove: () =>
                             handleMouseMove(rowIndex, colIndex),
-                          onMouseup: () => handleMouseUp(),
                         },
                         [
                           allowEdit.get(`${rowIndex}${colIndex}`) && slots[type]
@@ -366,7 +441,6 @@ export default {
                             handleMouseDown(rowIndex, colIndex),
                           onMousemove: () =>
                             handleMouseMove(rowIndex, colIndex),
-                          onMouseup: () => handleMouseUp(),
                         },
                         [
                           allowEdit.get(`${rowIndex}${colIndex}`) && slots[type]
@@ -405,7 +479,6 @@ export default {
                             handleMouseDown(rowIndex, colIndex),
                           onMousemove: () =>
                             handleMouseMove(rowIndex, colIndex),
-                          onMouseup: () => handleMouseUp(),
                         },
                         [
                           allowEdit.get(`${rowIndex}${colIndex}`) && slots[type]
@@ -444,7 +517,6 @@ export default {
                             handleMouseDown(rowIndex, colIndex),
                           onMousemove: () =>
                             handleMouseMove(rowIndex, colIndex),
-                          onMouseup: () => handleMouseUp(),
                         },
                         [
                           allowEdit.get(`${rowIndex}${colIndex}`) && slots[type]
@@ -483,7 +555,6 @@ export default {
                             handleMouseDown(rowIndex, colIndex),
                           onMousemove: () =>
                             handleMouseMove(rowIndex, colIndex),
-                          onMouseup: () => handleMouseUp(),
                         },
                         [
                           allowEdit.get(`${rowIndex}${colIndex}`) && slots[type]
@@ -512,6 +583,10 @@ export default {
                 ]);
               }),
             ]), //尝试添加式
+            selectionBounds.value ? h('div',{
+              class:['selected-region'],
+              style:getSelectionStyle(selectionBounds,left,height,width)
+            }) : ''
           ]),
         ]
       );

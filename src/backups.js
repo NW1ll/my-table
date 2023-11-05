@@ -1,6 +1,6 @@
 // import { h, reactive, ref, toRefs } from "vue";
 // import flyweight from "@/FlyWeight";
-// import "./index.css";
+// import "./dev-index.css";
 //
 // export default {
 //   name: "TableComponent",

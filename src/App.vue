@@ -29,12 +29,12 @@
 </template>
 
 <script setup>
+
 import { reactive, ref } from "vue";
-import TableComponent2 from "./Table2/TableComponent";
 import TableComponent3 from "@/Table3/tableComponents";
 import newFactory from "@/FlyWeight";
 import { cellFactory } from "@/Flyweight2";
-const LEN = 500;
+const LEN = 200;
 let colTypes = reactive(["input", "select", "input_email"]);
 let columns = reactive([
   { field: "id", title: "ID", type: "input" },

@@ -90,6 +90,7 @@ export default {
           firstRow = selectedCells[0].row;
           firstCol = selectedCells[0].col;
           Len = selectedCells.length;
+          console.log(selectedCells);
           value = props.rows[firstRow][props.columns[firstCol].field];
         }
         for (let i = 0; i < Len; i++) {
