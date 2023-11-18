@@ -70,8 +70,12 @@ export default {
         // Set the startRow, startCol, endRow and endCol properties
 
         left = calculateLeft(event.target.previousElementSibling);
-        height = event.target.offsetHeight;
-        width = event.target.offsetWidth;
+
+        if (!allowEdit.size) {
+          height = event.target.offsetHeight;
+          width = event.target.offsetWidth;
+        }
+
         startRow.value = row;
         startCol.value = col;
         endRow.value = row;
@@ -108,7 +112,6 @@ export default {
 
     const calculateWith = (target,row,col) => {
       // 距离来判断
-      console.log(col)
       if(oldCol < col){
         wid += target.offsetWidth
         oldCol = col;
@@ -116,7 +119,6 @@ export default {
         wid -= target.nextElementSibling.offsetWidth
         oldCol = col;
       }
-      console.log(wid)
       return wid
     }
 
@@ -124,6 +126,8 @@ export default {
 
       // 拖动启动div启动赋值功能
       if (isDragging.value && divDragging.value) {
+        //TODO 优化规则生成逻辑
+
         // copydata 分开
         endRow.value = row;
         endCol.value = col;
@@ -157,6 +161,7 @@ export default {
               Number(value) + (i + 1) * diff;
           }
         } else {
+          // 复制赋值
           for (let i = 0; i < Len; i++) {
             if (
               props.rows[firstRow + i][props.columns[firstCol].field] !== value
@@ -193,6 +198,7 @@ export default {
             selectedCells.push({ row: i, col: j });
           }
         }
+        console.log(selectedCells)
         let pObj = selectedCells.pop();
         select[0] = pObj;
         selectedCells.push(pObj);
@@ -601,7 +607,7 @@ export default {
                 ]);
               }),
             ]), //尝试添加式
-            selectionBounds.value ? h('div',{
+            selectionBounds.value && !allowEdit.size ? h('div',{
               class:['selected-region'],
               style:getSelectionStyle(selectionBounds,left,height,width)
             }) : ''
