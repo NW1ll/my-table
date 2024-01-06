@@ -1,39 +1,44 @@
 <template>
-  <TableComponent3 :rows="newRowFy" :columns="columns" :colTypes="colTypes">
-    <template #input="{ row }">
-      <vxe-select v-model="row.age">
-        <vxe-option
-          v-for="num in 20"
-          :key="num"
-          :value="num"
-          :label="`${num}`"
-        ></vxe-option>
-      </vxe-select>
-    </template>
+<!--  <TableComponent3 v-if='true' :rows="newRowFy" :columns="columns" :colTypes="colTypes">-->
+<!--    <template #input="{ row }">-->
+<!--      <vxe-select v-model="row.age">-->
+<!--        <vxe-option-->
+<!--          v-for="num in 20"-->
+<!--          :key="num"-->
+<!--          :value="num"-->
+<!--          :label="`${num}`"-->
+<!--        ></vxe-option>-->
+<!--      </vxe-select>-->
+<!--    </template>-->
 
-    <template #select="{ row }">
-      <vxe-select v-model="row.sex">
-        <vxe-option
-          v-for="num in ['男', '女']"
-          :key="num"
-          :value="num"
-          :label="`${num}`"
-        ></vxe-option>
-      </vxe-select>
-    </template>
+<!--    <template #select="{ row }">-->
+<!--      <vxe-select v-model="row.sex">-->
+<!--        <vxe-option-->
+<!--          v-for="num in ['男', '女']"-->
+<!--          :key="num"-->
+<!--          :value="num"-->
+<!--          :label="`${num}`"-->
+<!--        ></vxe-option>-->
+<!--      </vxe-select>-->
+<!--    </template>-->
 
-    <template #input_email="{ row }">
-      <vxe-input v-model="row.email"> </vxe-input>
-    </template>
-  </TableComponent3>
+<!--    <template #input_email="{ row }">-->
+<!--      <vxe-input v-model="row.email"> </vxe-input>-->
+<!--    </template>-->
+<!--  </TableComponent3>-->
+  <vtable></vtable>
+  <vtable2></vtable2>
 </template>
 
 <script setup>
 
 import { reactive, ref } from "vue";
 import TableComponent3 from "@/Table3/tableComponents";
-import newFactory from "@/FlyWeight";
 import { cellFactory } from "@/Flyweight2";
+import  vtable from '@/vxe-table_c3.vue'
+
+import  vtable2 from '@/vxe-table_c2.vue'
+
 const LEN = 200;
 let colTypes = reactive(["input", "select", "input_email"]);
 let columns = reactive([

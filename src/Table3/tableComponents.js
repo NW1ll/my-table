@@ -275,6 +275,7 @@ export default {
       // 复制所选中的单元格
       // ...
     };
+
     const handleKeyDown = (event) => {
       if (event.ctrlKey && event.key === "x") {
         let initRow = selectedCells[0].row,
@@ -377,6 +378,7 @@ export default {
     });
 
     const getSelectionStyle = (bounds,left,height,width) =>{
+      if(divDragging.value) return;
       // width = lastWidth || width; 保存复制之前的区域宽度
       // console.log(lastWidth,width)
       //TODO 通过剪切板状态判断是否使用lastWidth，从而设置粘贴后区域样式
@@ -389,9 +391,21 @@ export default {
       };
     };
 
+    const handleHeadClick = (colIndex) =>{
+      for(let i = 0 ; i < props.rows.length - 1 ; i++){
+        selectedCells.push({row:i,col:colIndex});
+      }
+      height = event.target.offsetHeight;
+      width = event.target.offsetWidth;
+      left = event.target.offsetLeft;
+      console.log(selectedCells)
+    }
 
-    const headers = props.columns.map((column) => {
-      return h("th", column.title);
+
+    const headers = props.columns.map((column,colIndex) => {
+      return h("th",{
+        onClick: () => handleHeadClick(colIndex),
+      } , column.title);
     });
 
     return () =>
@@ -616,3 +630,6 @@ export default {
       );
   },
 }; //操作单元格的使用运用享元模式
+
+
+///
