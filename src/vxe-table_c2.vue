@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import XEClipboard from 'xe-clipboard';
+// import XEClipboard from 'xe-clipboard';
 export default {
   data() {
     return{

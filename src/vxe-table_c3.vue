@@ -30,7 +30,7 @@
 </template>
 
 <script  setup>
-import XEClipboard from 'xe-clipboard';
+import XEClipboard from '../src/clipboard';
 import {nextTick, onMounted, reactive, ref} from "vue";
 
 let gridOptions = reactive({
@@ -447,7 +447,7 @@ const tbodymousedown = (event) => {
 const onKeyDown = ({$event}) =>{
   tbodykeydown($event);
 }
-
+// 事件集合
 const tbodykeydown = (event) =>{
   let tablexgrid=getTablexGrid();
   let tableColumn=getTablexGrid().getTableColumn()["visibleColumn"];
@@ -540,7 +540,7 @@ const tbodykeydown = (event) =>{
     event.preventDefault();
   }
 }
-
+// 事件处理集合
 const contextMenuClickEvent = ({menu,row,column,rowIndex,columnIndex,$event}) =>{
   let startRowIndex=selectionStart["rowIndex"];
   let endRowIndex=selectionEnd["rowIndex"];
@@ -548,6 +548,7 @@ const contextMenuClickEvent = ({menu,row,column,rowIndex,columnIndex,$event}) =>
   let endColumnIndex=selectionEnd["cellIndex"];
   let tableColumn=JSON.parse(JSON.stringify(getTablexGrid().getTableColumn()["visibleColumn"]));
   let tableData=getTablexGrid().getTableData()["visibleData"];
+  console.log(tableColumn,tableData)
   switch(menu.code){
       //复制
     case "cellCopy":
@@ -665,13 +666,13 @@ const generateAlphabetChars = (c, shift) =>{
   const shiftedChar = String.fromCharCode(shiftedAsciiCode);
   return asciiCode + shift > 122 ? 'a' + shiftedChar: shiftedChar;
 }
-
+// 拷贝
 const copyValue = (value) => {
   if (XEClipboard.copy(value)) {
     console.log(value)
   }
 }
-
+// 事件处理方法
 const tableScrollMove = (move) =>{
   let tableColumn=getTablexGrid().getTableColumn()["visibleColumn"];
   let tableData=getTablexGrid().getTableData()["visibleData"];
@@ -874,7 +875,6 @@ const getAreaBoxPosition = () => {
         width += col.renderWidth//选中区域的宽度
       }
     }
-
   })
   if (startRowIndex <= endRowIndex) {//开始行索引小于结束行索引,即从上往下选择
     height = (endRowIndex - startRowIndex + 1) * gridOptions.rowConfig.height//选中区域的高度
@@ -981,7 +981,7 @@ const tableCellMenuClick = (e) => {
 }
 
 
-
+// 辅助
 const toolbarButtonClickEvent = ({ code }) => {
   switch (code) {
     case "getcellselctdata":
